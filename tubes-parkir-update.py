@@ -43,24 +43,28 @@ def KeluarParkir():
     try:
         kendaraan = next((k for k in kendaraanmasuk if k["nomor_plat"] == platnomor), None)
         if kendaraan:
-            waktukeluar = datetime.datetime.now()
-            waktumasuk = kendaraan['waktu_masuk']
-            durasi_parkir = waktukeluar - waktumasuk
-            print("Waktu keluar:", waktukeluar)
-            print("Durasi parkir:", durasi_parkir)
+            if kendaraan['waktu_keluar'] is None:
+                waktukeluar = datetime.datetime.now()
+                waktumasuk = kendaraan['waktu_masuk']
+                durasi_parkir = waktukeluar - waktumasuk
+                print("Waktu keluar:", waktukeluar)
+                print("Durasi parkir:", durasi_parkir)
 
-            biaya_parkir = BiayaParkir(durasi_parkir.total_seconds())
-            kendaraan['biaya_parkir'] = biaya_parkir
-            kendaraan['waktu_keluar'] = waktukeluar
-            print(f'Biaya total parkir: Rp {biaya_parkir}')
-            nominal_pembayaran = float(input('Masukkan nominal pembayaran: '))
-            while nominal_pembayaran < biaya_parkir:
-                print("Pembayaran kurang. Silakan masukkan nominal yang cukup.")
+                biaya_parkir = BiayaParkir(durasi_parkir.total_seconds())
+                kendaraan['biaya_parkir'] = biaya_parkir
+                kendaraan['waktu_keluar'] = waktukeluar
+
+                print(f'Biaya total parkir: Rp {biaya_parkir}')
                 nominal_pembayaran = float(input('Masukkan nominal pembayaran: '))
+                while nominal_pembayaran < biaya_parkir:
+                    print("Pembayaran kurang. Silakan masukkan nominal yang cukup.")
+                    nominal_pembayaran = float(input('Masukkan nominal pembayaran: '))
 
-            kembalian = nominal_pembayaran - biaya_parkir
-            print(f"Kembalian: Rp {kembalian:,.2f}")
-            print('Terimakasih!')
+                kembalian = nominal_pembayaran - biaya_parkir
+                print(f"Kembalian: Rp {kembalian:,.2f}")
+                print('Terimakasih!')
+            else:
+                print("Error: Kendaraan sudah keluar dari area parkir.")
         else:
             print("Error: Kendaraan tidak tercatat masuk.")
     except KeyError:
@@ -136,14 +140,16 @@ def BiayaParkir(waktu_parkir_detik):
 
     denda = 0
 
-    if waktu_parkir_detik > 240:
+    if waktu_parkir_detik >= 240:
         biaya_parkir = 40000
         denda = 0.1 * biaya_parkir
         print("Denda sebesar 10% dari biaya parkir diterapkan.")
-    elif waktu_parkir_detik > 360:  
-        biaya_parkir = 50000
+        
+    if waktu_parkir_detik >= 360:  
+        biaya_parkir = 40000
         denda = 0.25 * biaya_parkir
         print("Denda sebesar 25% dari biaya parkir diterapkan.")
+    
     biaya_parkir += denda
 
     return biaya_parkir
